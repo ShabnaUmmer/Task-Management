@@ -9,13 +9,29 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = [
+  process.env.CLIENT_URL
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS policy: Access denied for this origin'));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/tasks', require('./routes/taskRoutes'));
 
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-app.use(errorHandler);
